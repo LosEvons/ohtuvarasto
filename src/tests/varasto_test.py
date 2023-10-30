@@ -5,6 +5,17 @@ from varasto import Varasto
 class TestVarasto(unittest.TestCase):
     def setUp(self):
         self.varasto = Varasto(10)
+        
+    def test_uusi_varasto_ei_negatiivinen(self):
+        varasto = Varasto(-1)
+        self.assertGreaterEqual(varasto.tilavuus, 0)
+    
+    def test_uusi_saldo_ei_negatiivinen(self):
+        varasto = Varasto(10, -1)
+        self.assertGreaterEqual(varasto.saldo, 0)
+    
+    def test_varasto_ei_negatiivinen(self):
+        self.assertGreaterEqual(self.varasto.tilavuus, 0)
 
     def test_konstruktori_luo_tyhjan_varaston(self):
         # https://docs.python.org/3/library/unittest.html#unittest.TestCase.assertAlmostEqual
@@ -17,6 +28,16 @@ class TestVarasto(unittest.TestCase):
         self.varasto.lisaa_varastoon(8)
 
         self.assertAlmostEqual(self.varasto.saldo, 8)
+        
+    def test_lisays_ei_negatiivinen(self):
+        alkumäärä = self.varasto.saldo
+        self.varasto.lisaa_varastoon(-1)
+        self.assertEqual(self.varasto.saldo, alkumäärä)
+        
+    def test_otto_ei_negatiivinen(self):
+        alkumäärä = self.varasto.saldo
+        self.varasto.ota_varastosta(-1)
+        self.assertEqual(self.varasto.saldo, alkumäärä)
 
     def test_lisays_lisaa_pienentaa_vapaata_tilaa(self):
         self.varasto.lisaa_varastoon(8)
@@ -24,12 +45,22 @@ class TestVarasto(unittest.TestCase):
         # vapaata tilaa pitäisi vielä olla tilavuus-lisättävä määrä eli 2
         self.assertAlmostEqual(self.varasto.paljonko_mahtuu(), 2)
 
+    def test_lisays_ei_ylita_varaston_tilaa(self):
+        self.varasto.lisaa_varastoon(11)
+        
+        self.assertAlmostEqual(self.varasto.saldo, self.varasto.tilavuus)
+
     def test_ottaminen_palauttaa_oikean_maaran(self):
         self.varasto.lisaa_varastoon(8)
 
         saatu_maara = self.varasto.ota_varastosta(2)
 
         self.assertAlmostEqual(saatu_maara, 2)
+        
+    def test_ottaminen_ei_ylita_varaston_saldoa(self):
+        self.varasto.ota_varastosta(11)
+        
+        self.assertAlmostEqual(self.varasto.saldo, 0)
 
     def test_ottaminen_lisaa_tilaa(self):
         self.varasto.lisaa_varastoon(8)
@@ -38,3 +69,7 @@ class TestVarasto(unittest.TestCase):
 
         # varastossa pitäisi olla tilaa 10 - 8 + 2 eli 4
         self.assertAlmostEqual(self.varasto.paljonko_mahtuu(), 4)
+        
+    def test_string(self):
+        varasto = Varasto(10, 5)
+        self.assertEqual(str(varasto), "saldo = 5, vielä tilaa 5")
